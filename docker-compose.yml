@@ -10,28 +10,27 @@ services:
     environment:
       ES_JAVA_OPTS: "-Xmx256m -Xms256m"
     networks:
-      - elk
+      - elastic
 
-  kibana: 
+  kibana:
     image: deviantony/elk-kibana
     ports:
       - "5601:5601"
     networks:
-      - elk
+      - elastic
     depends_on:
       - elasticsearch
 
   elasticsearch-importer-api:
-    build: ./docker-elasticsearch-import-api
+    build: ./src/elasticsearch-import-api-docker
     ports:
       - "8088:80"
     networks:
-      - elk
+      - elastic
     depends_on:
       - elasticsearch
 
-
 networks:
 
-  elk:
+  elastic:
     driver: bridge

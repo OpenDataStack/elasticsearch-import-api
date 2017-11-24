@@ -8,36 +8,59 @@ class RoboFile extends \Robo\Tasks
 {
     public function setup()
     {
-
         $this->io()->section("Clone repositories");
-        
-        // Clone Importer API
+        $this->_mkdir('src');
+
+        // Clone Import API Docker file
         $this->taskGitStack()
         ->stopOnFail()
-        ->cloneRepo("git@github.com:OpenDataStack/docker-elasticsearch-import-api.git")
+        ->cloneRepo("git@github.com:OpenDataStack/elasticsearch-import-api-docker.git", "src/elasticsearch-import-api-docker")
         ->run();
 
-        // Clone Symfony project
-        $this->_mkdir('docker-elasticsearch-import-api/src');
+        // Clone API server (Symfony app)
         $this->taskGitStack()
         ->stopOnFail()
-        ->cloneRepo("git@github.com:OpenDataStack/elasticsearch-import-api-symfony.git")
-        ->dir("docker-elasticsearch-import-api/src")
+        ->cloneRepo("git@github.com:OpenDataStack/elasticsearch-import-api-symfony.git", "src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony")
         ->run();
-        
+
+        // Clone API client
+        $this->taskGitStack()
+        ->stopOnFail()
+        ->cloneRepo("git@github.com:OpenDataStack/elasticsearch-import-api-client.git", "src/elasticsearch-import-api-client")
+        ->run();
+
         // Run composer install for the symfony app
         $this->taskComposerInstall()
-        ->dir("docker-elasticsearch-import-api/src/elasticsearch-import-api-symfony/")
+        ->dir("src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony")
+        ->noInteraction()
         ->run();
-
     }
 
-    public function rebuild()
+    public function dockerUp()
+    {
+        $this->taskExec('docker-compose')->arg('stop')->run();
+        $this->taskExec('docker-compose')->arg('up')->run();
+    }
+
+    public function dockerRebuild()
     {
         $this->taskExec('docker-compose')->arg('stop')->run();
         $this->taskExec('docker-compose')
         ->arg('up')
         ->option('build')
+        ->run();
+    }
+
+    public function dockerPush()
+    {
+        print "TODO";
+    }
+
+    public function test()
+    {
+      $this->taskPHPUnit()
+        ->dir("src/elasticsearch-import-api-client")
+        ->files('./src/tests/*')
         ->run();
     }
 
