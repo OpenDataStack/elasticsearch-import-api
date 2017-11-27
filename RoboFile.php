@@ -6,34 +6,50 @@
  */
 class RoboFile extends \Robo\Tasks
 {
+
+    private function _sources() {
+        $sources = [
+            // Import API Docker file
+            "git@github.com:OpenDataStack/elasticsearch-import-api-docker.git" => "src/elasticsearch-import-api-docker",
+            // API server (Symfony app)
+            "git@github.com:OpenDataStack/elasticsearch-import-api-symfony.git" => "src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony",
+            // API client
+            "git@github.com:OpenDataStack/elasticsearch-import-api-client.git" => "src/elasticsearch-import-api-client"
+        ];
+        return $sources;
+    }
+
     public function setup()
     {
-        $this->io()->section("Clone repositories");
+        $this->io()->section("Set up project for development");
         $this->_mkdir('src');
 
-        // Clone Import API Docker file
-        $this->taskGitStack()
-        ->stopOnFail()
-        ->cloneRepo("git@github.com:OpenDataStack/elasticsearch-import-api-docker.git", "src/elasticsearch-import-api-docker")
-        ->run();
-
-        // Clone API server (Symfony app)
-        $this->taskGitStack()
-        ->stopOnFail()
-        ->cloneRepo("git@github.com:OpenDataStack/elasticsearch-import-api-symfony.git", "src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony")
-        ->run();
-
-        // Clone API client
-        $this->taskGitStack()
-        ->stopOnFail()
-        ->cloneRepo("git@github.com:OpenDataStack/elasticsearch-import-api-client.git", "src/elasticsearch-import-api-client")
-        ->run();
+        foreach ($this->_sources() as $repo => $destination) {
+            // Clone 
+            $this->taskGitStack()
+            ->stopOnFail()
+            ->cloneRepo($rep, $destination)
+            ->run();
+        }
 
         // Run composer install for the symfony app
         $this->taskComposerInstall()
         ->dir("src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony")
         ->noInteraction()
         ->run();
+    }
+
+    public function gitPull()
+    {
+        $this->io()->section("Update all repositories");
+
+        foreach ($this->_sources() as $repo => $destination) {
+            $this->taskGitStack()
+            ->dir($destination)
+            ->stopOnFail()
+            ->pull()
+            ->run();
+        }
     }
 
     public function dockerUp()
