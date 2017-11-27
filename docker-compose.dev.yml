@@ -4,4 +4,9 @@ services:
 
   elasticsearch-importer-api:
     volumes:
-      - "./src/elasticsearch-import-api-symfony:/var/www/project"
+      - "./src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony:/var/www/project"
+    env_file:
+      - ./dev.env
+    environment:
+      - WWW_UID=1000
+      - WWW_GID=1000
