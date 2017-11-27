@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+
+  elasticsearch-importer-api:
+    volumes:
+      - "./src/elasticsearch-import-api-symfony:/var/www/project"

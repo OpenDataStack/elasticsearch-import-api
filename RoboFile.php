@@ -76,10 +76,16 @@ class RoboFile extends \Robo\Tasks
         }
     }
 
-    public function dockerUp()
+    public function dockerUpProd()
     {
         $this->taskExec('docker-compose')->arg('stop')->run();
         $this->taskExec('docker-compose')->arg('up')->run();
+    }
+
+    public function dockerUpDev()
+    {
+        $this->taskExec('docker-compose')->arg('stop')->run();
+        $this->taskExec('docker-compose -f docker-compose.yml -f docker-compose.dev.yml')->arg('up')->run();
     }
 
     public function dockerRebuild()
