@@ -52,6 +52,30 @@ class RoboFile extends \Robo\Tasks
         }
     }
 
+    public function gitPush()
+    {
+        $this->io()->section("Push all repositories");
+
+        foreach ($this->_sources() as $repo => $destination) {
+            $this->taskGitStack()
+            ->dir($destination)
+            ->stopOnFail()
+            ->push()
+            ->run();
+        }
+    }
+
+    public function gitStatus()
+    {
+        $this->io()->section("Status of all repositories");
+
+        foreach ($this->_sources() as $repo => $destination) {
+            $this->taskExec("git status")
+            ->dir($destination)
+            ->run();
+        }
+    }
+
     public function dockerUp()
     {
         $this->taskExec('docker-compose')->arg('stop')->run();
