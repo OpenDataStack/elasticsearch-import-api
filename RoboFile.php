@@ -43,7 +43,7 @@ class RoboFile extends \Robo\Tasks
     {
         $this->io()->section("Update all repositories");
 
-        foreach ($this->_sources() as $repo => $destination) {
+        foreach ($this->_sources() + ['repo' => '.'] as $repo => $destination) {
             $this->taskGitStack()
             ->dir($destination)
             ->stopOnFail()
@@ -56,7 +56,7 @@ class RoboFile extends \Robo\Tasks
     {
         $this->io()->section("Push all repositories");
 
-        foreach ($this->_sources() as $repo => $destination) {
+        foreach ($this->_sources() + ['repo' => '.'] as $repo => $destination) {
             $this->taskGitStack()
             ->dir($destination)
             ->stopOnFail()
