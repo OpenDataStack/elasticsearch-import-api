@@ -28,7 +28,7 @@ class RoboFile extends \Robo\Tasks
             // Clone 
             $this->taskGitStack()
             ->stopOnFail()
-            ->cloneRepo($rep, $destination)
+            ->cloneRepo($repo, $destination)
             ->run();
         }
 
