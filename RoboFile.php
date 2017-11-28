@@ -107,6 +107,7 @@ class RoboFile extends \Robo\Tasks
       $this->taskPHPUnit()
         ->dir("src/elasticsearch-import-api-client")
         ->files('./src/tests/*')
+          ->group('Unit')
         ->run();
     }
 
