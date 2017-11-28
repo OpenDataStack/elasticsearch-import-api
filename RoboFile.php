@@ -69,7 +69,7 @@ class RoboFile extends \Robo\Tasks
     {
         $this->io()->section("Status of all repositories");
 
-        foreach ($this->_sources() as $repo => $destination) {
+        foreach ($this->_sources() + ['repo' => '.'] as $repo => $destination) {
             $this->taskExec("git status")
             ->dir($destination)
             ->run();
@@ -85,7 +85,7 @@ class RoboFile extends \Robo\Tasks
     public function dockerUpDev()
     {
         $this->taskExec('docker-compose')->arg('stop')->run();
-        $this->taskExec('docker-compose -f docker-compose.yml -f docker-compose.dev.yml')->arg('up')->run();
+        $this->taskExec('docker-compose -f docker-compose.yml -f docker-compose.dev.yml')->args('up', '-d')->run();
     }
 
     public function dockerRebuild()
