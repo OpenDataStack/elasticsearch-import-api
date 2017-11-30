@@ -12,5 +12,15 @@
             "email": "noomane.achraf@gmail.com"
         }
     ],
-    "require": {}
+    "autoload": {
+        "psr-4": {
+            "OpenDataStack\\Tests\\": "src/elasticsearch-import-api-client/src/tests/OpenDataStack/Client"
+        },
+        "exclude-from-classmap": [
+            "/tests/"
+        ]
+    },
+    "require": {
+        "guzzlehttp/guzzle": "~6.0"
+    }
 }
