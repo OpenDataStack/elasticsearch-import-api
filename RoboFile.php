@@ -39,6 +39,8 @@ class RoboFile extends \Robo\Tasks
         ->run();
     }
 
+    // Version Control Operations
+
     public function gitPull()
     {
         $this->io()->section("Update all repositories");
@@ -76,6 +78,8 @@ class RoboFile extends \Robo\Tasks
         }
     }
 
+    // Docker Operations
+
     public function dockerUpProd()
     {
         $this->taskExec('docker-compose')->arg('stop')->run();
@@ -85,7 +89,7 @@ class RoboFile extends \Robo\Tasks
     public function dockerUpDev()
     {
         $this->taskExec('docker-compose')->arg('stop')->run();
-        $this->taskExec('docker-compose -f docker-compose.yml -f docker-compose.dev.yml')->arg('up')->run();
+        $this->taskExec('docker-compose -f docker-compose.yml -f docker-compose.dev.yml')->arg('up')->rawArg('-d')->run();
     }
 
     public function dockerRebuild()
@@ -102,6 +106,8 @@ class RoboFile extends \Robo\Tasks
         print "TODO";
     }
 
+    // PHPUnit Tests
+    
     public function test()
     {
       $this->taskPHPUnit()
