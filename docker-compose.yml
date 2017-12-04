@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 
 services:
 
@@ -30,7 +30,36 @@ services:
     depends_on:
       - elasticsearch
 
-networks:
+  dkan_mariadb:
+    image: wodby/mariadb:10.2-3.0.1
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: dkan
+      MYSQL_USER: dkan
+      MYSQL_PASSWORD: dkan
+    healthcheck:
+        test: "mysql --user=root --password=password -e 'select 1;'"
+        timeout: 3s
+        retries: 10
 
+  dkan_memcached:
+    image: wodby/memcached:1.4-2.0.0
+
+  dkan_apache_php:
+    image: opendatastack/dkan-opendatastack:latest
+    environment:
+      DB_HOST: dkan_mariadb
+      DB_DRIVER: mysql
+      DB_USER: dkan
+      DB_PASSWORD: dkan
+      DB_NAME: dkan
+      MEMCACHED_HOST: dkan_memcached
+    depends_on:
+      dkan_mariadb:
+        condition: service_healthy
+    ports:
+      - "8787:80"
+
+networks:
   elastic:
     driver: bridge

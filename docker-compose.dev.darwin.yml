@@ -1,0 +1,26 @@
+version: '2.1'
+
+services:
+
+  elasticsearch-importer-api:
+    env_file:
+      - ./dev.env
+    environment:
+      - WWW_UID=1000
+      - WWW_GID=1000
+    volumes:
+      - elasticsearch-importer-api-sync:/var/www/project
+
+  dkan_apache_php:
+    image: apache-php-fpm:latest
+    environment:
+      WWW_UID: 501
+      WWW_GID: 501
+    volumes:
+      - dkan-opendatastack-sync:/var/www/html:nocopy
+
+volumes:
+  dkan-opendatastack-sync:
+    external: true
+  elasticsearch-importer-api-sync:
+    external: true

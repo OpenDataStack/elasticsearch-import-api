@@ -14,7 +14,11 @@ class RoboFile extends \Robo\Tasks
             // API server (Symfony app)
             "git@github.com:OpenDataStack/elasticsearch-import-api-symfony.git" => "src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony",
             // API client
-            "git@github.com:OpenDataStack/elasticsearch-import-api-client.git" => "src/elasticsearch-import-api-client"
+            "git@github.com:OpenDataStack/elasticsearch-import-api-client.git" => "src/elasticsearch-import-api-client",
+            // DKAN Dockerfile / Image
+            "git@github.com:OpenDataStack/dkan-opendatastack-docker.git" => "src/dkan-opendatastack-docker",
+            // DKAN Open Data Stack Source
+            "git@github.com:OpenDataStack/dkan-opendatastack.git" => "src/dkan-opendatastack-docker/src/dkan-opendatastack"
         ];
         return $sources;
     }
@@ -25,11 +29,13 @@ class RoboFile extends \Robo\Tasks
         $this->_mkdir('src');
 
         foreach ($this->_sources() as $repo => $destination) {
-            // Clone 
-            $this->taskGitStack()
-            ->stopOnFail()
-            ->cloneRepo($repo, $destination)
-            ->run();
+            if (!file_exists($destination . '/.git')) {
+                // Clone 
+                $this->taskGitStack()
+                ->stopOnFail()
+                ->cloneRepo($repo, $destination)
+                ->run();                
+            }
         }
 
         // Run composer install for the symfony app
@@ -88,8 +94,25 @@ class RoboFile extends \Robo\Tasks
 
     public function dockerUpDev()
     {
+        $dockerCompose = [
+            'docker-compose',
+            '-f docker-compose.yml',
+        ];
+
+        // 'Darwin' or 'Linux'
+        if (PHP_OS == 'Darwin') {
+            $this->taskExec('docker-sync')->arg('stop')->run();
+            // TODO add fast start arg cutting out clean step
+            $this->taskExec('docker-sync')->arg('clean')->run();
+            $this->taskExec('docker-sync')->arg('start')->run();
+        }
+        // 'Darwin' or 'Linux' => darwin or linux
+        $dockerCompose[] = '-f docker-compose.dev.' . strtolower(PHP_OS) . '.yml';
+        //$dockerCompose[] = '-f docker-compose.dev.linux.yml';
+
         $this->taskExec('docker-compose')->arg('stop')->run();
-        $this->taskExec('docker-compose -f docker-compose.yml -f docker-compose.dev.yml')->args('up', '-d')->run();
+        $this->taskExec(implode(' ', $dockerCompose))->args('up')->run();
+
     }
 
     public function dockerRebuild()
@@ -115,6 +138,20 @@ class RoboFile extends \Robo\Tasks
         ->files('./src/tests/*')
           ->group('Unit')
         ->run();
+    }
+
+    public function dkanInstall()
+    {
+        $this->taskExec('
+            time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush si dkan --verbose --account-pass=\'admin\' --site-name=\'DKAN\' install_configure_form.update_status_module=\'array(FALSE,FALSE)\' --yes"
+        ')->run();
+    }
+
+    public function dkanDrush(array $args)
+    {
+        $this->taskExec('
+            docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush ' . implode(' ', $args) . '"
+        ')->run();
     }
 
 }

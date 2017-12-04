@@ -1,0 +1,11 @@
+version: "2"
+
+options:
+  verbose: true
+syncs:
+  elasticsearch-importer-api-sync:
+    src: './src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony'
+    sync_userid: 501
+  dkan-opendatastack-sync:
+    src: './src/dkan-opendatastack-docker/src/dkan-opendatastack/src/dkan_starter'
+    sync_userid: 501

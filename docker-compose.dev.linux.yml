@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 
 services:
 
@@ -10,3 +10,11 @@ services:
     environment:
       - WWW_UID=1000
       - WWW_GID=1000
+
+  dkan_apache_php:
+    image: apache-php-fpm:latest
+    environment:
+      WWW_UID: 501
+      WWW_GID: 501
+    volumes:
+      - ./src/dkan-opendatastack-docker/src/dkan-opendatastack/src/dkan_starter:/var/www/html:nocopy
