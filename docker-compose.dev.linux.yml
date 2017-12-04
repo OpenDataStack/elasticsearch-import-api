@@ -12,9 +12,11 @@ services:
       - WWW_GID=1000
 
   dkan_apache_php:
-    image: apache-php-fpm:latest
+    image: opendatastack/apache-php-fpm:latest
+    env_file:
+      - ./dev.env
     environment:
-      WWW_UID: 501
-      WWW_GID: 501
+      WWW_UID: 1000
+      WWW_GID: 1000
     volumes:
       - ./src/dkan-opendatastack-docker/src/dkan-opendatastack/src/dkan_starter:/var/www/html
