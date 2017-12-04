@@ -17,4 +17,4 @@ services:
       WWW_UID: 501
       WWW_GID: 501
     volumes:
-      - ./src/dkan-opendatastack-docker/src/dkan-opendatastack/src/dkan_starter:/var/www/html:nocopy
+      - ./src/dkan-opendatastack-docker/src/dkan-opendatastack/src/dkan_starter:/var/www/html
