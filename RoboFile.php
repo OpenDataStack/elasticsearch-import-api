@@ -136,15 +136,23 @@ class RoboFile extends \Robo\Tasks
       $this->taskPHPUnit()
         ->dir("src/elasticsearch-import-api-client")
         ->files('./src/tests/*')
-          ->group('Unit')
+          ->group('Integration')
         ->run();
     }
 
     public function dkanInstall()
     {
-        $this->taskExec('
+        $this->taskExecStack()
+            ->stopOnFail()
+            ->exec('
             time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush si dkan --verbose --account-pass=\'admin\' --site-name=\'DKAN\' install_configure_form.update_status_module=\'array(FALSE,FALSE)\' --yes"
-        ')->run();
+        ')
+            ->exec('
+            time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush  -y en custom_config"')
+            ->exec('
+            time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush fr -y  --force custom_config"')
+            ->run();
+
     }
 
     public function dkanDrush(array $args)
