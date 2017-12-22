@@ -52,11 +52,15 @@ class RoboFile extends \Robo\Tasks
         $this->io()->section("Update all repositories");
 
         foreach ($this->_sources() + ['repo' => '.'] as $repo => $destination) {
-            $this->taskGitStack()
-            ->dir($destination)
-            ->stopOnFail()
-            ->pull()
-            ->run();
+            if (!file_exists($destination)) {
+                $this->io->error("Repo directory does not exist, have you ran `robo setup`?");
+            } else {
+                $this->taskGitStack()
+                     ->dir($destination)
+                     ->stopOnFail()
+                     ->pull()
+                     ->run();
+            }
         }
     }
 
