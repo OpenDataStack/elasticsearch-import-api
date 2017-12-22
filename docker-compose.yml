@@ -24,6 +24,8 @@ services:
 
   elasticsearch-importer-api:
     build: ./src/elasticsearch-import-api-docker
+    environment:
+      APP_ELASTIC_SERVER_HOST: 'http://elasticsearch:9200'
     ports:
       - "8088:80"
     networks:
