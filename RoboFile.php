@@ -119,9 +119,8 @@ class RoboFile extends \Robo\Tasks
     {
         $this->taskExec('docker-compose')->arg('stop')->run();
         $this->taskExec('docker-compose')
-        ->arg('up')
-        ->option('build')
-        ->run();
+             ->arg('build')
+             ->run();
     }
 
     public function dockerPush()
