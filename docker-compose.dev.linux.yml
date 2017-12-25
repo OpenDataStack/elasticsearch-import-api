@@ -11,7 +11,7 @@ services:
       - WWW_UID=1000
       - WWW_GID=1000
 
-  dkan_apache_php:
+  dkan-apache-php:
     image: opendatastack/apache-php-fpm:latest
     env_file:
       - ./dev.env

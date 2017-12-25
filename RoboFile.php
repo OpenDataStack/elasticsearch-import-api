@@ -30,11 +30,11 @@ class RoboFile extends \Robo\Tasks
 
         foreach ($this->_sources() as $repo => $destination) {
             if (!file_exists($destination . '/.git')) {
-                // Clone 
+                // Clone
                 $this->taskGitStack()
                 ->stopOnFail()
                 ->cloneRepo($repo, $destination)
-                ->run();                
+                ->run();
             }
         }
 
@@ -133,7 +133,7 @@ class RoboFile extends \Robo\Tasks
     }
 
     // PHPUnit Tests
-    
+
     public function test()
     {
       $this->taskPHPUnit()
@@ -147,10 +147,10 @@ class RoboFile extends \Robo\Tasks
     {
         $this->taskExecStack()
             ->stopOnFail()
-            ->exec('time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush si dkan --verbose --account-pass=\'admin\' --site-name=\'DKAN\' install_configure_form.update_status_module=\'array(FALSE,FALSE)\' --yes"')
-            ->exec('time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush  -y en custom_config"')
-            ->exec('time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush fr -y  --force custom_config"')
-            ->exec('time docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush cc all"')
+            ->exec('time docker-compose exec --user=www-data dkan-apache-php /bin/bash -c "cd /var/www/html/docroot && drush si dkan --verbose --account-pass=\'admin\' --site-name=\'DKAN\' install_configure_form.update_status_module=\'array(FALSE,FALSE)\' --yes"')
+            ->exec('time docker-compose exec --user=www-data dkan-apache-php /bin/bash -c "cd /var/www/html/docroot && drush  -y en custom_config"')
+            ->exec('time docker-compose exec --user=www-data dkan-apache-php /bin/bash -c "cd /var/www/html/docroot && drush fr -y  --force custom_config"')
+            ->exec('time docker-compose exec --user=www-data dkan-apache-php /bin/bash -c "cd /var/www/html/docroot && drush cc all"')
             ->run();
 
     }
@@ -158,7 +158,7 @@ class RoboFile extends \Robo\Tasks
     public function dkanDrush(array $args)
     {
         $this->taskExec('
-            docker-compose exec --user=www-data dkan_apache_php /bin/bash -c "cd /var/www/html/docroot && drush ' . implode(' ', $args) . '"
+            docker-compose exec --user=www-data dkan-apache-php /bin/bash -c "cd /var/www/html/docroot && drush ' . implode(' ', $args) . '"
         ')->run();
     }
 

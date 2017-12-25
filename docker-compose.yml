@@ -10,15 +10,11 @@ services:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    networks:
-      - elastic
 
   kibana:
     image: docker.elastic.co/kibana/kibana-oss:6.1.0
     ports:
       - "5601:5601"
-    networks:
-      - elastic
     depends_on:
       - elasticsearch
 
@@ -28,12 +24,10 @@ services:
       APP_ELASTIC_SERVER_HOST: 'http://elasticsearch:9200'
     ports:
       - "8088:80"
-    networks:
-      - elastic
     depends_on:
       - elasticsearch
 
-  dkan_mariadb:
+  dkan-mariadb:
     image: wodby/mariadb:10.2-3.0.1
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -45,24 +39,20 @@ services:
         timeout: 3s
         retries: 10
 
-  dkan_memcached:
+  dkan-memcached:
     image: wodby/memcached:1.4-2.0.0
 
-  dkan_apache_php:
+  dkan-apache-php:
     image: opendatastack/dkan-opendatastack:latest
     environment:
-      DB_HOST: dkan_mariadb
+      DB_HOST: dkan-mariadb
       DB_DRIVER: mysql
       DB_USER: dkan
       DB_PASSWORD: dkan
       DB_NAME: dkan
       MEMCACHED_HOST: dkan_memcached
     depends_on:
-      dkan_mariadb:
+      dkan-mariadb:
         condition: service_healthy
     ports:
-      - "8787:80"
-
-networks:
-  elastic:
-    driver: bridge
+      - "80:80"

@@ -11,7 +11,7 @@ services:
     volumes:
       - elasticsearch-importer-api-sync:/var/www/project
 
-  dkan_apache_php:
+  dkan-apache-php:
     image: apache-php-fpm:latest
     environment:
       WWW_UID: 501
