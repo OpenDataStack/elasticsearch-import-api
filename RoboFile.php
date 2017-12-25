@@ -43,6 +43,18 @@ class RoboFile extends \Robo\Tasks
         ->dir("src/elasticsearch-import-api-docker/src/elasticsearch-import-api-symfony")
         ->noInteraction()
         ->run();
+
+        $this->setupHosts();
+    }
+
+    /**
+     * Update the /etc/hosts file to include dkan service.
+     */
+    public function setupHosts()
+    {
+        $this->io()->section("Update /etc/hosts to make sure the 'dkan-apache-php' entry is included.");
+        $this->_exec("sudo sed -i '/dkan\-apache\-php/d' /etc/hosts");
+        $this->_exec('echo "127.0.0.1 dkan-apache-php" | sudo tee -a /etc/hosts');
     }
 
     // Version Control Operations
