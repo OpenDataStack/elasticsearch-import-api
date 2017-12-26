@@ -124,7 +124,9 @@ class RoboFile extends \Robo\Tasks
         }
         // 'Darwin' or 'Linux' => darwin or linux
         $dockerCompose[] = '-f docker-compose.dev.' . strtolower(PHP_OS) . '.yml';
-        //$dockerCompose[] = '-f docker-compose.dev.linux.yml';
+
+        // For dev setup add the additional order/healcheck directive.
+        $dockerCompose[] = '-f docker-compose.dev.healthcheck.yml';
 
         $this->taskExec('docker-compose')->arg('stop')->run();
         $this->taskExec(implode(' ', $dockerCompose))->args('up')->run();

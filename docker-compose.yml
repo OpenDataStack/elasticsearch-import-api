@@ -1,3 +1,4 @@
+---
 version: '2.1'
 
 services:
@@ -12,11 +13,20 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:6.1.0
-    ports:
-      - "5601:5601"
+    image: opendatastack/kibana:6.0.0
+    container_name: kibana
+    environment:
+      SERVER_BASEPATH: '/analytics'
+      ELASTICSEARCH_URL: 'http://localhost:19200'
+      ELASTICSEARCH_REQUESTHEADERSWHITELIST: '["x-proxy-user","cookie"]'
+      OWN_HOME_ELASTICSEARCH_URL: 'http://elasticsearch:9200'
+      OWN_HOME_SESSION_SECRETKEY: 'the-password-must-be-at-least-32-characters-long'
+      OWN_HOME_SESSION_ISSECURE: 'false'
+      OWN_HOME_LOCAL_GROUPS: '["common01","common02"]'
     depends_on:
       - elasticsearch
+    ports:
+      - "5601:5601"
 
   elasticsearch-importer-api:
     build: ./src/elasticsearch-import-api-docker
@@ -34,10 +44,6 @@ services:
       MYSQL_DATABASE: dkan
       MYSQL_USER: dkan
       MYSQL_PASSWORD: dkan
-    healthcheck:
-        test: "mysql --user=root --password=password -e 'select 1;'"
-        timeout: 3s
-        retries: 10
 
   dkan-memcached:
     image: wodby/memcached:1.4-2.0.0
@@ -50,11 +56,81 @@ services:
       DB_USER: dkan
       DB_PASSWORD: dkan
       DB_NAME: dkan
-      MEMCACHED_HOST: dkan_memcached
+      MEMCACHED_HOST: dkan-memcached
       DKAN_OPENDATASTACK_ELASTICSEARCH_API_HOST: 'http://172.22.0.1:8088'
       DKAN_OPENDATASTACK_ELASTICSEARCH_API_KEY: '283y2daksjn'
     depends_on:
-      dkan-mariadb:
-        condition: service_healthy
+      - dkan-mariadb
     ports:
       - "80:80"
+
+  kong-database:
+    image: postgres:9.5.3
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: kong
+
+  kong:
+    image: haufelexware/wicked.kong:latest
+    ports:
+      # - "7946:7946/tcp"
+      # - "7946:7946/udp"
+      - "8000:8000/tcp"
+      # - "8001:8001/tcp"
+      - "8443:8443/tcp"
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: postgres_user
+      KONG_PG_PASSWORD: postgres_password
+      # KONG_ADMIN_ACCESS_LOG: '/dev/stdout'
+      # KONG_ADMIN_ERROR_LOG: '/dev/stderr'
+      KONG_PROXY_ACCESS_LOG: '/dev/stdout'
+      KONG_PROXY_ERROR_LOG: '/dev/stderr'
+    depends_on:
+      - kong-database
+    links:
+      - kibana
+    volumes:
+      # - './kong/kong.conf:/etc/kong/kong.conf'
+      - 'kong-plugin-jwt-vlm:/usr/local/share/lua/5.1/kong/plugins/jwt'
+
+  kong-plugin-jwt:
+    image: indiehosters/git
+    command: ["sh", "-c", "rm -rv /data; git clone https://$${GITHUB_USER}:@$${GITHUB_REPO} /data"]
+    environment:
+      - GITHUB_USER=angrycactus-bot
+      - GITHUB_REPO=github.com/OpenDataStack/kong-plugin-jwt
+    volumes:
+      - kong-plugin-jwt-vlm:/data
+    restart: 'no'
+    labels:
+      - io.rancher.container.start_once=true
+
+  kongfig:
+    image: mashupmill/kongfig
+    environment:
+      - OPENDATASTACK_DKAN_CONSUMER_JWT_KEY=dkan_opendatastack_kibana
+      - OPENDATASTACK_DKAN_CONSUMER_JWT_SECRET=e71829c351aa4242c2719cbfbe671c09
+    volumes:
+      - kongfig-config-vlm:/data/
+    command: --path /data/opendatastack-kibana-jwt.js --host kong:8001
+    depends_on:
+      - kong
+
+  kongfig-config:
+    image: indiehosters/git
+    command: ["sh", "-c", "rm -rv /data; git clone https://$${GITHUB_USER}:@$${GITHUB_REPO} /data"]
+    environment:
+      - GITHUB_USER=angrycactus-bot
+      - GITHUB_REPO=github.com/OpenDataStack/kong-config
+    volumes:
+      - kongfig-config-vlm:/data
+    restart: 'no'
+    labels:
+      - io.rancher.container.start_once=true
+
+volumes:
+  kong-plugin-jwt-vlm:
+  kongfig-config-vlm:

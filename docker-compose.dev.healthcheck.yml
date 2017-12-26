@@ -1,0 +1,37 @@
+---
+version: '2.1'
+
+services:
+
+  elasticsearch:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -I -s -L http://127.0.0.1:9200 || exit 1"]
+      interval: 5s
+      retries: 10
+
+  dkan-mariadb:
+    healthcheck:
+        test: "mysql --user=root --password=password -e 'select 1;'"
+        timeout: 3s
+        retries: 10
+
+  kong-database:
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kong:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -I -s -L http://127.0.0.1:8000 || exit 1"]
+      interval: 5s
+      retries: 10
+    depends_on:
+      kong-database:
+        condition: service_healthy
+
+  dkan-apache-php:
+    depends_on:
+      dkan-mariadb:
+        condition: service_healthy
