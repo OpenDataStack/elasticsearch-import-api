@@ -51,6 +51,8 @@ services:
       DB_PASSWORD: dkan
       DB_NAME: dkan
       MEMCACHED_HOST: dkan_memcached
+      DKAN_OPENDATASTACK_ELASTICSEARCH_API_HOST: 'http://172.22.0.1:8088'
+      DKAN_OPENDATASTACK_ELASTICSEARCH_API_KEY: '283y2daksjn'
     depends_on:
       dkan-mariadb:
         condition: service_healthy
