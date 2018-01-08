@@ -129,7 +129,9 @@ class RoboFile extends \Robo\Tasks
         $dockerCompose[] = '-f docker-compose.dev.healthcheck.yml';
 
         $this->taskExec('docker-compose')->arg('stop')->run();
-        $this->taskExec(implode(' ', $dockerCompose))->args('up')->run();
+        $this->taskExec(implode(' ', $dockerCompose))
+             ->rawArg('up -d')
+             ->run();
 
     }
 

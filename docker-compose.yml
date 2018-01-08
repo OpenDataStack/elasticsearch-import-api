@@ -4,7 +4,7 @@ version: '2.1'
 services:
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.0
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.0.0
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -14,7 +14,7 @@ services:
 
   kibana:
     image: opendatastack/kibana:6.0.0
-    container_name: kibana
+    container_name: 'kibana'
     environment:
       SERVER_BASEPATH: '/analytics'
       ELASTICSEARCH_URL: 'http://localhost:19200'
@@ -29,6 +29,7 @@ services:
       - "5601:5601"
 
   elasticsearch-importer-api:
+    container_name: 'elasticsearch-importer-api'
     build: ./src/elasticsearch-import-api-docker
     environment:
       APP_ELASTIC_SERVER_HOST: 'http://elasticsearch:9200'
@@ -38,6 +39,7 @@ services:
       - elasticsearch
 
   dkan-mariadb:
+    container_name: 'mariadb'
     image: wodby/mariadb:10.2-3.0.1
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -45,10 +47,12 @@ services:
       MYSQL_USER: dkan
       MYSQL_PASSWORD: dkan
 
-  dkan-memcached:
-    image: wodby/memcached:1.4-2.0.0
+  # dkan-memcached:
+    # container_name: 'memcached'
+    # image: wodby/memcached:1.4-2.0.0
 
   dkan-apache-php:
+    container_name: 'dkan'
     image: opendatastack/dkan-opendatastack:latest
     environment:
       DB_HOST: dkan-mariadb
@@ -59,6 +63,8 @@ services:
       MEMCACHED_HOST: dkan-memcached
       DKAN_OPENDATASTACK_ELASTICSEARCH_API_HOST: 'http://elasticsearch-importer-api'
       DKAN_OPENDATASTACK_ELASTICSEARCH_API_KEY: '283y2daksjn'
+      DKAN_OPENDATASTACK_KIBANA_SRC: 'http://dkan-apache-php:8000/analytics'
+      DKAN_OPENDATASTACK_KIBANA_JWT_SECRET: 'e71829c351aa4242c2719cbfbe671c09'
     depends_on:
       - dkan-mariadb
       - elasticsearch-importer-api
@@ -66,6 +72,7 @@ services:
       - "80:80"
 
   kong-database:
+    container_name: 'kong-database'
     image: postgres:9.5.3
     environment:
       POSTGRES_USER: postgres_user
@@ -73,6 +80,7 @@ services:
       POSTGRES_DB: kong
 
   kong:
+    container_name: 'kong'
     image: haufelexware/wicked.kong:latest
     ports:
       # - "7946:7946/tcp"
@@ -98,6 +106,7 @@ services:
       - 'kong-plugin-jwt-vlm:/usr/local/share/lua/5.1/kong/plugins/jwt'
 
   kong-plugin-jwt:
+    container_name: 'kong-plugin-jwt'
     image: indiehosters/git
     command: ["sh", "-c", "rm -rv /data; git clone https://$${GITHUB_USER}:@$${GITHUB_REPO} /data"]
     environment:
@@ -110,6 +119,7 @@ services:
       - io.rancher.container.start_once=true
 
   kongfig:
+    container_name: 'kongfig'
     image: mashupmill/kongfig
     environment:
       - OPENDATASTACK_DKAN_CONSUMER_JWT_KEY=dkan_opendatastack_kibana
@@ -121,6 +131,7 @@ services:
       - kong
 
   kongfig-config:
+    container_name: 'kongfig-config'
     image: indiehosters/git
     command: ["sh", "-c", "rm -rv /data; git clone https://$${GITHUB_USER}:@$${GITHUB_REPO} /data"]
     environment:
