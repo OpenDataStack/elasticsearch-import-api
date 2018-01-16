@@ -105,6 +105,39 @@ services:
       # - './kong/kong.conf:/etc/kong/kong.conf'
       - 'kong-plugin-jwt-vlm:/usr/local/share/lua/5.1/kong/plugins/jwt'
 
+  portal-api:
+    image: haufelexware/wicked.portal-api:latest
+    environment:
+      - "NODE_ENV=development"
+      - "PORTAL_CONFIG_KEY=2c94d4ffce4b631a776289dca18bc9afec60f667"
+      - "GIT_REPO=https://github.com/OpenDataStack/wicked-config.git"
+      - "GIT_CREDENTIALS=angrycactus-bot"
+
+  portal:
+    image: haufelexware/wicked.portal:latest
+    depends_on:
+      - "portal-api"
+      - "kong"
+    expose:
+      - "3000"
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+
+  portal-kong-adapter:
+    image: haufelexware/wicked.portal-kong-adapter:latest
+    depends_on:
+      - "portal-api"
+      - "kong"
+    environment:
+      - "PORTAL_CONFIG_KEY=2c94d4ffce4b631a776289dca18bc9afec60f667"
+
+  portal-mailer:
+    image: haufelexware/wicked.portal-mailer:latest
+    restart: unless-stopped
+    depends_on:
+      - "portal-api"
+
   kong-plugin-jwt:
     container_name: 'kong-plugin-jwt'
     image: indiehosters/git
